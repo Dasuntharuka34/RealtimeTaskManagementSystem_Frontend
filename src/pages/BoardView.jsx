@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { setLists, setCards, setCurrentBoard } from '../store/slices/kanbanSlice';
 import api from '../services/api';
-import { initSocket, disconnectSocket, getSocket } from '../services/socketService';
+import { initPusher, disconnectPusher } from '../services/pusherService';
 import KanbanBoard from '../features/kanban/KanbanBoard';
 import BoardSettingsPanel from '../features/kanban/BoardSettingsPanel';
 import InviteModal from '../features/kanban/InviteModal';
@@ -11,8 +11,6 @@ import CardDetailModal from '../features/kanban/CardDetailModal';
 import BoardFilters from '../features/kanban/BoardFilters';
 import { LayoutDashboard, Users, Lock, Globe, Settings, ChevronLeft, Search, Filter, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-let socket;
 
 const BoardView = () => {
     const { id } = useParams();
@@ -99,28 +97,20 @@ const BoardView = () => {
     useEffect(() => {
         fetchBoardData();
 
-        // Setup Socket.io via singleton
-        const socket = initSocket(id);
-
-        socket.on('board-updated', () => {
-            console.log('Received board-updated event, fetching new data...');
-            fetchBoardData();
-        });
-
-        // Listen for board settings changes from other users
-        socket.on('board-settings-updated', () => {
+        // Setup Pusher for real-time updates
+        initPusher(id, () => {
             fetchBoardData();
         });
 
         return () => {
-            disconnectSocket(id);
+            disconnectPusher(id);
         };
         // eslint-disable-next-line
     }, [id, dispatch]);
 
-    // Called after settings/invite changes so other clients are notified
+    // Called after settings/invite changes
     const handleBoardUpdated = () => {
-        getSocket()?.emit('board-settings-updated', { boardId: id });
+        // Triggers are now handled by the backend
     };
 
     if (loading) {

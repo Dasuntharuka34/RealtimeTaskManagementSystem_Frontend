@@ -17,6 +17,7 @@
         "@uiw/react-md-editor": "^4.0.11",
         "axios": "^1.5.0",
         "lucide-react": "^0.279.0",
+        "pusher-js": "^8.4.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-redux": "^8.1.2",

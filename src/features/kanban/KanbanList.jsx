@@ -6,7 +6,6 @@ import { Plus, MoreHorizontal, Trash2, Edit2, GripHorizontal } from 'lucide-reac
 import { useDispatch } from 'react-redux';
 import { addCard, updateListLocally, deleteListLocally } from '../../store/slices/kanbanSlice';
 import api from '../../services/api';
-import { getSocket } from '../../services/socketService';
 import ConfirmModal from '../../components/common/ConfirmModal';
 
 const KanbanList = ({ list, cards, onCardSelect }) => {
@@ -67,9 +66,6 @@ const KanbanList = ({ list, cards, onCardSelect }) => {
             dispatch(addCard(data));
             setNewCardTitle('');
             setIsAddingCard(false);
-
-            // Emit socket event to notify other clients
-            getSocket()?.emit('list-updated', { boardId: list.boardId });
         } catch (error) {
             console.error('Failed to create card', error);
         }
@@ -86,9 +82,6 @@ const KanbanList = ({ list, cards, onCardSelect }) => {
             const { data } = await api.put(`/lists/${list._id}`, { title: editTitleValue });
             dispatch(updateListLocally(data));
             setIsEditingTitle(false);
-
-            // Emit socket event
-            getSocket()?.emit('list-updated', { boardId: list.boardId });
         } catch (error) {
             console.error('Failed to rename list', error);
             setEditTitleValue(list.title);
@@ -100,9 +93,6 @@ const KanbanList = ({ list, cards, onCardSelect }) => {
         try {
             await api.delete(`/lists/${list._id}`);
             dispatch(deleteListLocally(list._id));
-
-            // Emit socket event
-            getSocket()?.emit('list-updated', { boardId: list.boardId });
         } catch (error) {
             console.error('Failed to delete list', error);
         }

@@ -5,7 +5,6 @@ import { Calendar, MoreHorizontal, MessageSquare, Edit2, Trash2, Flag, AlignLeft
 import { useDispatch, useSelector } from 'react-redux';
 import { updateCardLocally, deleteCardLocally } from '../../store/slices/kanbanSlice';
 import api from '../../services/api';
-import { getSocket } from '../../services/socketService';
 import ConfirmModal from '../../components/common/ConfirmModal';
 
 const KanbanCard = ({ card, onCardSelect }) => {
@@ -58,9 +57,6 @@ const KanbanCard = ({ card, onCardSelect }) => {
             const { data } = await api.put(`/cards/${card._id}`, { title: editTitleValue });
             dispatch(updateCardLocally(data));
             setIsEditingTitle(false);
-
-            // Emit socket event
-            getSocket()?.emit('card-moved', { boardId: card.boardId });
         } catch (error) {
             console.error('Failed to rename card', error);
             setEditTitleValue(card.title);
@@ -72,9 +68,6 @@ const KanbanCard = ({ card, onCardSelect }) => {
         try {
             await api.delete(`/cards/${card._id}`);
             dispatch(deleteCardLocally(card._id));
-
-            // Emit socket event
-            getSocket()?.emit('card-moved', { boardId: card.boardId });
         } catch (error) {
             console.error('Failed to delete card', error);
         }

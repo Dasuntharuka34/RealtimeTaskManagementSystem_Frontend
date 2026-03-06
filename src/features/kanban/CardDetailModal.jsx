@@ -3,7 +3,6 @@ import { X, AlignLeft, Users, Calendar, Activity, CheckSquare, Plus, Flag, Tag, 
 import { useDispatch, useSelector } from 'react-redux';
 import { updateCardLocally } from '../../store/slices/kanbanSlice';
 import api from '../../services/api';
-import { getSocket } from '../../services/socketService';
 
 const CardDetailModal = ({ card, onClose, boardMembers }) => {
     const dispatch = useDispatch();
@@ -63,8 +62,6 @@ const CardDetailModal = ({ card, onClose, boardMembers }) => {
         try {
             const { data } = await api.put(`/cards/${card._id}`, { description });
             dispatch(updateCardLocally(data));
-
-            getSocket()?.emit('card-moved', { boardId: card.boardId });
         } catch (error) {
             console.error('Failed to update description', error);
             setDescription(card.description || '');
@@ -89,8 +86,6 @@ const CardDetailModal = ({ card, onClose, boardMembers }) => {
             // To ensure UI has member details (name, avatar etc)
             const cardToUpdate = { ...data, assignedTo: newAssignedTo };
             dispatch(updateCardLocally(cardToUpdate));
-
-            getSocket()?.emit('card-moved', { boardId: card.boardId });
         } catch (error) {
             console.error('Failed to update card assignment', error);
         }
@@ -106,7 +101,6 @@ const CardDetailModal = ({ card, onClose, boardMembers }) => {
             const cardToUpdate = { ...data, assignedTo: card.assignedTo };
             dispatch(updateCardLocally(cardToUpdate));
 
-            getSocket()?.emit('card-moved', { boardId: card.boardId });
         } catch (error) {
             console.error('Failed to update priority', error);
         }
@@ -120,7 +114,6 @@ const CardDetailModal = ({ card, onClose, boardMembers }) => {
             const cardToUpdate = { ...data, assignedTo: card.assignedTo };
             dispatch(updateCardLocally(cardToUpdate));
 
-            getSocket()?.emit('card-moved', { boardId: card.boardId });
         } catch (error) {
             console.error('Failed to update due date', error);
         }
@@ -138,8 +131,6 @@ const CardDetailModal = ({ card, onClose, boardMembers }) => {
             const cardToUpdate = { ...data, assignedTo: card.assignedTo };
             dispatch(updateCardLocally(cardToUpdate));
             setNewLabelText('');
-
-            getSocket()?.emit('card-moved', { boardId: card.boardId });
         } catch (error) {
             console.error('Failed to add label', error);
         }
@@ -153,8 +144,6 @@ const CardDetailModal = ({ card, onClose, boardMembers }) => {
             const { data } = await api.put(`/cards/${card._id}`, { labels: updatedLabels });
             const cardToUpdate = { ...data, assignedTo: card.assignedTo };
             dispatch(updateCardLocally(cardToUpdate));
-
-            getSocket()?.emit('card-moved', { boardId: card.boardId });
         } catch (error) {
             console.error('Failed to remove label', error);
         }
@@ -168,9 +157,6 @@ const CardDetailModal = ({ card, onClose, boardMembers }) => {
             const { data } = await api.put(`/cards/${card._id}`, { coverColor: color });
             const cardToUpdate = { ...data, assignedTo: card.assignedTo };
             dispatch(updateCardLocally(cardToUpdate));
-
-            console.log('Emitting card-moved for board:', card.boardId);
-            getSocket()?.emit('card-moved', { boardId: card.boardId });
         } catch (error) {
             console.error('Failed to update cover color', error);
         }
@@ -202,8 +188,6 @@ const CardDetailModal = ({ card, onClose, boardMembers }) => {
             };
             dispatch(updateCardLocally(cardToUpdate));
             setCommentText('');
-
-            getSocket()?.emit('card-moved', { boardId: card.boardId });
         } catch (error) {
             console.error('Failed to post comment', error);
         }
@@ -221,8 +205,6 @@ const CardDetailModal = ({ card, onClose, boardMembers }) => {
             const cardToUpdate = { ...data, assignedTo: card.assignedTo };
             dispatch(updateCardLocally(cardToUpdate));
             setNewSubtaskTitle('');
-
-            getSocket()?.emit('card-moved', { boardId: card.boardId });
         } catch (error) {
             console.error('Failed to add subtask', error);
         }
@@ -237,8 +219,6 @@ const CardDetailModal = ({ card, onClose, boardMembers }) => {
             const { data } = await api.put(`/cards/${card._id}`, { subtasks: updatedSubtasks });
             const cardToUpdate = { ...data, assignedTo: card.assignedTo };
             dispatch(updateCardLocally(cardToUpdate));
-
-            getSocket()?.emit('card-moved', { boardId: card.boardId });
         } catch (error) {
             console.error('Failed to toggle subtask', error);
         }
@@ -251,8 +231,6 @@ const CardDetailModal = ({ card, onClose, boardMembers }) => {
             const { data } = await api.put(`/cards/${card._id}`, { subtasks: updatedSubtasks });
             const cardToUpdate = { ...data, assignedTo: card.assignedTo };
             dispatch(updateCardLocally(cardToUpdate));
-
-            getSocket()?.emit('card-moved', { boardId: card.boardId });
         } catch (error) {
             console.error('Failed to delete subtask', error);
         }

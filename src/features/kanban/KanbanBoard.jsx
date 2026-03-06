@@ -16,7 +16,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { updateListOrderLocally, updateCardOrderLocally, addList, moveCard } from '../../store/slices/kanbanSlice';
 import { store } from '../../store/store';
 import api from '../../services/api';
-import { getSocket } from '../../services/socketService';
 import { Plus } from 'lucide-react';
 
 const KanbanBoard = ({ boardId, cards: propCards, onCardSelect }) => {
@@ -57,7 +56,7 @@ const KanbanBoard = ({ boardId, cards: propCards, onCardSelect }) => {
             setNewListTitle('');
             setIsAddingList(false);
 
-            getSocket()?.emit('list-updated', { boardId });
+            setIsAddingList(false);
         } catch (error) {
             console.error('Failed to create list', error);
         }
@@ -119,8 +118,6 @@ const KanbanBoard = ({ boardId, cards: propCards, onCardSelect }) => {
             dispatch(updateListOrderLocally(newLists));
             try {
                 await api.put('/lists/reorder', { lists: newLists });
-
-                getSocket()?.emit('list-updated', { boardId });
             } catch (error) {
                 console.error('Failed to save list order', error);
             }
@@ -139,8 +136,6 @@ const KanbanBoard = ({ boardId, cards: propCards, onCardSelect }) => {
 
             try {
                 await api.put('/cards/reorder', { cards: cardsToUpdate });
-
-                getSocket()?.emit('card-moved', { boardId });
             } catch (error) {
                 console.error('Failed to save card order', error);
             }

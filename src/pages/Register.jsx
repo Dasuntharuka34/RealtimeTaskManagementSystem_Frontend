@@ -8,6 +8,8 @@ const Register = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [localError, setLocalError] = useState('');
     const [isSuccess, setIsSuccess] = useState(false);
 
     const dispatch = useDispatch();
@@ -24,6 +26,13 @@ const Register = () => {
 
     const submitHandler = async (e) => {
         e.preventDefault();
+        setLocalError('');
+
+        if (password !== confirmPassword) {
+            setLocalError('Passwords do not match');
+            return;
+        }
+
         const result = await dispatch(register({ name, email, password }));
         if (register.fulfilled.match(result)) {
             // Check if it's a message-only response (verification case)
@@ -62,7 +71,7 @@ const Register = () => {
         <div className="flex min-h-screen items-center justify-center bg-slate-900 text-slate-100 px-4 py-8">
             <div className="w-full max-w-md p-6 sm:p-8 bg-slate-800 rounded-lg shadow-xl shadow-slate-900/50 border border-slate-700">
                 <h1 className="text-3xl font-bold text-center mb-6 bg-gradient-to-r from-teal-400 to-indigo-500 bg-clip-text text-transparent">Sign Up</h1>
-                {error && <div className="mb-4 bg-red-500/20 text-red-200 border border-red-500/50 p-3 rounded">{error}</div>}
+                {(localError || error) && <div className="mb-4 bg-red-500/20 text-red-200 border border-red-500/50 p-3 rounded">{localError || error}</div>}
                 <form onSubmit={submitHandler} className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-slate-300 mb-1">Name</label>
@@ -93,6 +102,17 @@ const Register = () => {
                             placeholder="Create a password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            required
+                            className="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all placeholder-slate-500 shadow-inner shadow-slate-950/20"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-1">Confirm Password</label>
+                        <input
+                            type="password"
+                            placeholder="Confirm your password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
                             required
                             className="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all placeholder-slate-500 shadow-inner shadow-slate-950/20"
                         />

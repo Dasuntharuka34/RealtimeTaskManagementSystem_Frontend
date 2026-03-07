@@ -35,6 +35,7 @@ const CardDetailModal = ({ card, onClose, boardMembers }) => {
     const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
     const [showCoverSelect, setShowCoverSelect] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [previewAttachment, setPreviewAttachment] = useState(null);
 
     // Convert assigned API objects to their IDs for easy checking
     const assignedIds = card.assignedTo?.map(u => u._id || u) || [];
@@ -381,15 +382,23 @@ const CardDetailModal = ({ card, onClose, boardMembers }) => {
                                     <div className="space-y-3">
                                         {(card.attachments || []).map((attachment) => (
                                             <div key={attachment._id} className="flex flex-col sm:flex-row sm:items-center gap-3 bg-slate-800/50 p-3 rounded-lg border border-slate-700/50 hover:bg-slate-800 transition-colors group">
-                                                <div className="w-12 h-12 bg-slate-900 rounded-md flex items-center justify-center shrink-0 border border-slate-700">
+                                                <div 
+                                                    className={`w-12 h-12 bg-slate-900 rounded-md flex items-center justify-center shrink-0 border border-slate-700 overflow-hidden ${attachment.mimetype?.startsWith('image/') ? 'cursor-pointer hover:opacity-80' : ''}`}
+                                                    onClick={() => attachment.mimetype?.startsWith('image/') && setPreviewAttachment(attachment)}
+                                                >
                                                     {attachment.mimetype?.startsWith('image/') ? (
-                                                        <img src={attachment.url} alt="thumbnail" className="w-full h-full object-cover rounded-md" />
+                                                        <img src={attachment.url} alt="thumbnail" className="w-full h-full object-cover" />
                                                     ) : (
                                                         <File className="text-slate-400" size={20} />
                                                     )}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="font-medium text-slate-200 text-sm truncate">{attachment.filename}</p>
+                                                    <p 
+                                                        className="font-medium text-slate-200 text-sm truncate cursor-pointer hover:underline"
+                                                        onClick={() => attachment.mimetype?.startsWith('image/') ? setPreviewAttachment(attachment) : window.open(attachment.url, '_blank')}
+                                                    >
+                                                        {attachment.filename}
+                                                    </p>
                                                     <span className="text-xs text-slate-500">
                                                         Added {new Date(attachment.uploadedAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
                                                     </span>
@@ -513,8 +522,12 @@ const CardDetailModal = ({ card, onClose, boardMembers }) => {
 
                                 {/* Comment Input */}
                                 <div className="flex gap-3 mb-6">
-                                    <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-xs text-white font-bold shrink-0 mt-1">
-                                        {userInfo?.name ? userInfo.name.charAt(0).toUpperCase() : 'U'}
+                                    <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-xs text-white font-bold shrink-0 mt-1 overflow-hidden">
+                                        {userInfo?.avatar ? (
+                                            <img src={userInfo.avatar} alt={userInfo.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            userInfo?.name ? userInfo.name.charAt(0).toUpperCase() : 'U'
+                                        )}
                                     </div>
                                     <div className="flex-1">
                                         <div className="bg-slate-900 border border-slate-700 rounded-lg shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all overflow-hidden">
@@ -555,8 +568,12 @@ const CardDetailModal = ({ card, onClose, boardMembers }) => {
 
                                             return (
                                                 <div key={comment._id || idx} className="flex gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs text-white font-bold shrink-0">
-                                                        {userAvatar}
+                                                    <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs text-white font-bold shrink-0 overflow-hidden">
+                                                        {memberData.avatar ? (
+                                                            <img src={memberData.avatar} alt={userName} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            userAvatar
+                                                        )}
                                                     </div>
                                                     <div className="flex-1">
                                                         <div className="flex items-baseline gap-2 mb-1">
@@ -607,14 +624,18 @@ const CardDetailModal = ({ card, onClose, boardMembers }) => {
                                         <h5 className="text-xs font-semibold text-slate-400 px-3 mb-2">Board Members</h5>
                                         <div className="max-h-48 overflow-y-auto">
                                             {boardMembers?.map(member => (
-                                                <div
-                                                    key={member._id}
-                                                    onClick={() => toggleMember(member)}
-                                                    className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-700 cursor-pointer"
-                                                >
-                                                    <div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-[10px] text-white font-bold shrink-0">
-                                                        {member.name ? member.name.charAt(0).toUpperCase() : 'U'}
-                                                    </div>
+                                                    <div
+                                                        key={member._id}
+                                                        onClick={() => toggleMember(member)}
+                                                        className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-700 cursor-pointer"
+                                                    >
+                                                        <div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-[10px] text-white font-bold shrink-0 overflow-hidden">
+                                                            {member.avatar ? (
+                                                                <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                member.name ? member.name.charAt(0).toUpperCase() : 'U'
+                                                            )}
+                                                        </div>
                                                     <span className="text-sm truncate flex-1">{member.name || member.email}</span>
                                                     {assignedIds.includes(member._id) && (
                                                         <span className="text-blue-400 text-xs shrink-0">✓</span>
@@ -820,10 +841,14 @@ const CardDetailModal = ({ card, onClose, boardMembers }) => {
                                     {card.assignedTo.map((user, idx) => (
                                         <div
                                             key={idx}
-                                            className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-xs text-white font-bold cursor-pointer hover:bg-indigo-600 transition-colors"
+                                            className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-xs text-white font-bold cursor-pointer hover:bg-indigo-600 transition-colors overflow-hidden"
                                             title={user.name || user.email}
                                         >
-                                            {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                                            {user.avatar ? (
+                                                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                user.name ? user.name.charAt(0).toUpperCase() : 'U'
+                                            )}
                                         </div>
                                     ))}
                                     {isOwner && (
@@ -842,6 +867,45 @@ const CardDetailModal = ({ card, onClose, boardMembers }) => {
                 </div>
 
             </div>
+
+            {/* Image Preview Lightbox */}
+            {previewAttachment && (
+                <div 
+                    className="fixed inset-0 z-[60] bg-black/90 flex flex-col items-center justify-center animate-in fade-in duration-200"
+                    onClick={() => setPreviewAttachment(null)}
+                >
+                    <button 
+                        className="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-800 p-2 rounded-full transition-colors z-[70]"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setPreviewAttachment(null);
+                        }}
+                    >
+                        <X size={24} />
+                    </button>
+                    <div className="p-4 w-full h-full flex flex-col items-center justify-center max-w-6xl mx-auto">
+                        <img 
+                            src={previewAttachment.url} 
+                            alt={previewAttachment.filename} 
+                            className="max-w-full max-h-full object-contain rounded-md shadow-2xl"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                        <div className="mt-4 text-center">
+                            <p className="text-slate-200 font-medium">{previewAttachment.filename}</p>
+                            <a 
+                                href={previewAttachment.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="text-blue-400 hover:text-blue-300 text-sm inline-flex flex-row items-center gap-1 mt-2"
+                                onClick={(e) => e.stopPropagation()}
+                                download
+                            >
+                                <Download size={14} /> Download Original
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

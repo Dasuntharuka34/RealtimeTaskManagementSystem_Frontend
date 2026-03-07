@@ -145,8 +145,12 @@ const BoardFilters = ({
                                                 onChange={() => toggleMember(member._id)}
                                                 className="rounded border-slate-600 bg-slate-900 text-blue-600 focus:ring-blue-500 focus:ring-offset-slate-800"
                                             />
-                                            <div className="w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center text-[10px] text-white font-bold shrink-0">
-                                                {member.name?.charAt(0).toUpperCase()}
+                                            <div className="w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center text-[10px] text-white font-bold shrink-0 overflow-hidden">
+                                                {member.avatar ? (
+                                                    <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    member.name?.charAt(0).toUpperCase()
+                                                )}
                                             </div>
                                             <span className="truncate">{member.name || member.email}</span>
                                         </label>

@@ -33,6 +33,19 @@ export const updateProfile = createAsyncThunk('auth/updateProfile', async (userD
     }
 });
 
+export const uploadAvatar = createAsyncThunk('auth/uploadAvatar', async (formData, thunkAPI) => {
+    try {
+        const response = await api.post('/users/profile/avatar', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        return response.data;
+    } catch (error) {
+        return thunkAPI.rejectWithValue(error.response?.data?.message || 'Failed to upload avatar');
+    }
+});
+
 const userInfoFromStorage = localStorage.getItem('userInfo')
     ? JSON.parse(localStorage.getItem('userInfo'))
     : null;
@@ -97,6 +110,19 @@ const authSlice = createSlice({
                 localStorage.setItem('userInfo', JSON.stringify(action.payload));
             })
             .addCase(updateProfile.rejected, (state, action) => {
+                state.isLoading = false;
+                state.error = action.payload;
+            })
+            .addCase(uploadAvatar.pending, (state) => {
+                state.isLoading = true;
+                state.error = null;
+            })
+            .addCase(uploadAvatar.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.userInfo = action.payload;
+                localStorage.setItem('userInfo', JSON.stringify(action.payload));
+            })
+            .addCase(uploadAvatar.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = action.payload;
             });

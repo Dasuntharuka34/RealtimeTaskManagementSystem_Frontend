@@ -140,10 +140,13 @@ const InviteModal = ({ onClose, onBoardUpdated }) => {
                                         key={member._id}
                                         className="flex items-center gap-3 p-2.5 rounded-lg bg-slate-800/50 hover:bg-slate-800 transition-colors border border-slate-700/50"
                                     >
-                                        {/* Avatar */}
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 ${isMemberOwner ? 'bg-amber-600' : 'bg-indigo-600'
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 overflow-hidden ${isMemberOwner ? 'bg-amber-600' : 'bg-indigo-600'
                                             }`}>
-                                            {member.name?.charAt(0).toUpperCase()}
+                                            {member.avatar ? (
+                                                <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                member.name?.charAt(0).toUpperCase()
+                                            )}
                                         </div>
 
                                         {/* Info */}

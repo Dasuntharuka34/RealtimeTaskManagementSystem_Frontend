@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Calendar, MoreHorizontal, MessageSquare, Edit2, Trash2, Flag, AlignLeft, GripHorizontal, CheckSquare } from 'lucide-react';
+import { Calendar, MoreHorizontal, MessageSquare, Edit2, Trash2, Flag, AlignLeft, GripHorizontal, CheckSquare, Paperclip } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateCardLocally, deleteCardLocally } from '../../store/slices/kanbanSlice';
 import api from '../../services/api';
@@ -106,8 +106,16 @@ const KanbanCard = ({ card, onCardSelect }) => {
             style={style}
             className="bg-slate-800 border border-slate-700 hover:border-slate-500 rounded-lg mb-3 shadow-sm hover:shadow-md transition-all group select-none flex flex-col"
         >
-            {/* Cover Color Bar */}
-            {card.coverColor && (
+            {/* Cover Image or Color Bar */}
+            {card.attachments?.some(a => a.mimetype?.startsWith('image/')) ? (
+                <div className="w-full h-32 shrink-0 shadow-[0_1px_3px_rgba(0,0,0,0.3)] rounded-t-lg overflow-hidden group-hover:opacity-90 transition-opacity">
+                    <img 
+                        src={card.attachments.find(a => a.mimetype?.startsWith('image/')).url} 
+                        alt="attachment preview" 
+                        className="w-full h-full object-cover"
+                    />
+                </div>
+            ) : card.coverColor && (
                 <div
                     className="w-full h-1 shrink-0 shadow-[0_1px_3px_rgba(0,0,0,0.3)] rounded-t-lg"
                     style={{ backgroundColor: card.coverColor }}
@@ -271,13 +279,23 @@ const KanbanCard = ({ card, onCardSelect }) => {
                                     <span>{card.comments.length}</span>
                                 </div>
                             )}
+                            {card.attachments?.length > 0 && (
+                                <div className="flex items-center gap-1 text-xs text-slate-400 bg-slate-700/50 px-1.5 py-0.5 rounded" title="Attachments">
+                                    <Paperclip size={12} />
+                                    <span>{card.attachments.length}</span>
+                                </div>
+                            )}
                         </div>
 
                         {/* Assigned Users Placeholder */}
                         <div className="flex -space-x-2 shrink-0">
                             {card.assignedTo?.slice(0, 3).map((user, idx) => (
-                                <div key={idx} className="w-6 h-6 rounded-full bg-indigo-500 border border-slate-800 flex items-center justify-center text-[10px] text-white font-bold" title={user.name || user.email}>
-                                    {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                                <div key={idx} className="w-6 h-6 rounded-full bg-indigo-500 border border-slate-800 flex items-center justify-center text-[10px] text-white font-bold overflow-hidden" title={user.name || user.email}>
+                                    {user.avatar ? (
+                                        <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        user.name ? user.name.charAt(0).toUpperCase() : 'U'
+                                    )}
                                 </div>
                             ))}
                         </div>

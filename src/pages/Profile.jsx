@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
-import { updateProfile, clearError } from '../store/slices/authSlice';
-import { User, Mail, Lock, ChevronLeft, Save, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { updateProfile, uploadAvatar, clearError } from '../store/slices/authSlice';
+import { User, Mail, Lock, ChevronLeft, Save, AlertCircle, CheckCircle2, Camera } from 'lucide-react';
+import { useRef } from 'react';
 
 const Profile = () => {
     const [name, setName] = useState('');
@@ -16,6 +17,7 @@ const Profile = () => {
     const navigate = useNavigate();
 
     const { userInfo, isLoading, error } = useSelector((state) => state.auth);
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         if (userInfo) {
@@ -51,6 +53,29 @@ const Profile = () => {
         }
     };
 
+    const handleAvatarChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            setMessage('Image must be smaller than 5MB');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('avatar', file);
+
+        try {
+            await dispatch(uploadAvatar(formData)).unwrap();
+            setSuccess(true);
+            setTimeout(() => setSuccess(false), 3000);
+        } catch (err) {
+            setMessage('Failed to upload avatar');
+        } finally {
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
     return (
         <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col">
             <header className="bg-slate-800 border-b border-slate-700 px-4 py-3 shrink-0 flex items-center justify-between">
@@ -65,13 +90,46 @@ const Profile = () => {
             <main className="flex-1 p-4 sm:p-6 md:p-12 max-w-2xl mx-auto w-full">
                 <div className="bg-slate-800 border border-slate-700 rounded-xl shadow-xl overflow-hidden">
                     <div className="p-6 sm:p-8">
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="w-16 h-16 rounded-full bg-indigo-600 flex items-center justify-center text-2xl font-bold shadow-lg shadow-indigo-900/20">
-                                {userInfo?.name?.charAt(0).toUpperCase()}
+                        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8">
+                            <div 
+                                className="relative w-24 h-24 rounded-full bg-indigo-600 flex items-center justify-center text-3xl font-bold shadow-lg shadow-indigo-900/20 group cursor-pointer overflow-hidden border-2 border-slate-700 hover:border-blue-500 transition-colors shrink-0"
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                {userInfo?.avatar ? (
+                                    <img src={userInfo.avatar} alt="Profile Avatar" className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="text-white">{userInfo?.name?.charAt(0).toUpperCase()}</span>
+                                )}
+                                
+                                <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Camera size={24} className="text-white" />
+                                </div>
+
+                                {isLoading && (
+                                    <div className="absolute inset-0 bg-slate-900/80 flex items-center justify-center">
+                                        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                                    </div>
+                                )}
                             </div>
-                            <div>
-                                <h2 className="text-xl font-bold text-slate-100">{userInfo?.name}</h2>
-                                <p className="text-slate-400 text-sm">{userInfo?.email}</p>
+
+                            <input 
+                                type="file" 
+                                ref={fileInputRef} 
+                                onChange={handleAvatarChange} 
+                                className="hidden" 
+                                accept="image/*"
+                            />
+
+                            <div className="text-center sm:text-left mt-2 sm:mt-0">
+                                <h2 className="text-2xl font-bold text-slate-100">{userInfo?.name}</h2>
+                                <p className="text-slate-400 mt-1">{userInfo?.email}</p>
+                                <button 
+                                    className="text-blue-400 hover:text-blue-300 text-sm mt-2 font-medium"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={isLoading}
+                                >
+                                    Change Profile Picture
+                                </button>
                             </div>
                         </div>
 

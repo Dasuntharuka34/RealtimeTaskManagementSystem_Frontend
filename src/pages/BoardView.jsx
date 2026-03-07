@@ -16,6 +16,7 @@ const BoardView = () => {
     const { id } = useParams();
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const { userInfo } = useSelector((state) => state.auth);
     const { currentBoard, cards } = useSelector((state) => state.kanban);
     const [loading, setLoading] = useState(true);
     const [showSettings, setShowSettings] = useState(false);
@@ -148,8 +149,12 @@ const BoardView = () => {
                     <div className="hidden sm:flex items-center gap-4 shrink-0">
                         <div className="flex -space-x-2 mr-2">
                             {currentBoard?.members?.slice(0, 4).map((member, idx) => (
-                                <div key={idx} className="w-8 h-8 rounded-full bg-indigo-600 border-2 border-slate-800 flex items-center justify-center text-xs text-white font-bold" title={member.name}>
-                                    {member.name?.charAt(0).toUpperCase()}
+                                <div key={idx} className="w-8 h-8 rounded-full bg-indigo-600 border-2 border-slate-800 flex items-center justify-center text-xs text-white font-bold overflow-hidden" title={member.name}>
+                                    {member.avatar ? (
+                                        <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        member.name?.charAt(0).toUpperCase()
+                                    )}
                                 </div>
                             ))}
                             {currentBoard?.members?.length > 4 && (
@@ -174,10 +179,14 @@ const BoardView = () => {
                         </button>
                         <Link
                             to="/profile"
-                            className="p-1.5 text-slate-400 hover:bg-slate-700 hover:text-slate-200 rounded-md transition-colors"
+                            className="w-8 h-8 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center text-slate-300 font-bold text-xs transition-colors overflow-hidden border border-slate-600"
                             title="Profile Settings"
                         >
-                            <User size={20} />
+                            {userInfo?.avatar ? (
+                                <img src={userInfo.avatar} alt="Profile" className="w-full h-full object-cover" />
+                            ) : (
+                                <User size={16} />
+                            )}
                         </Link>
                     </div>
                 </div>
@@ -186,8 +195,12 @@ const BoardView = () => {
                 <div className="flex sm:hidden items-center justify-between pl-9 mt-1">
                     <div className="flex -space-x-2">
                         {currentBoard?.members?.slice(0, 3).map((member, idx) => (
-                            <div key={idx} className="w-6 h-6 rounded-full bg-indigo-600 border-2 border-slate-800 flex items-center justify-center text-[10px] text-white font-bold" title={member.name}>
-                                {member.name?.charAt(0).toUpperCase()}
+                            <div key={idx} className="w-6 h-6 rounded-full bg-indigo-600 border-2 border-slate-800 flex items-center justify-center text-[10px] text-white font-bold overflow-hidden" title={member.name}>
+                                {member.avatar ? (
+                                    <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
+                                ) : (
+                                    member.name?.charAt(0).toUpperCase()
+                                )}
                             </div>
                         ))}
                         {currentBoard?.members?.length > 3 && (

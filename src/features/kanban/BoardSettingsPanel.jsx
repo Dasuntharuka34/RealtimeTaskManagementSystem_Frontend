@@ -212,8 +212,12 @@ const BoardSettingsPanel = ({ onClose, onBoardUpdated }) => {
                                 const isYou = member._id === userInfo?._id;
                                 return (
                                     <div key={member._id} className="flex items-center gap-3 p-3 bg-slate-800 rounded-lg border border-slate-700">
-                                        <div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white shrink-0">
-                                            {member.name?.charAt(0).toUpperCase()}
+                                        <div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white shrink-0 overflow-hidden">
+                                            {member.avatar ? (
+                                                <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                member.name?.charAt(0).toUpperCase()
+                                            )}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">

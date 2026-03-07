@@ -63,8 +63,12 @@ const Dashboard = () => {
                 </div>
                 <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                     <Link to="/profile" className="flex items-center gap-2 hover:bg-slate-700/50 p-1.5 rounded-md transition-colors group">
-                        <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-sm shrink-0">
-                            {userInfo?.name?.charAt(0).toUpperCase()}
+                        <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden">
+                            {userInfo?.avatar ? (
+                                <img src={userInfo.avatar} alt={userInfo.name} className="w-full h-full object-cover" />
+                            ) : (
+                                userInfo?.name?.charAt(0).toUpperCase()
+                            )}
                         </div>
                         <span className="text-sm text-slate-300 hidden sm:block group-hover:text-white">{userInfo?.name}</span>
                     </Link>

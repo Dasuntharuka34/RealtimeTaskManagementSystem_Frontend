@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { setLists, setCards, setCurrentBoard } from '../store/slices/kanbanSlice';
 import api from '../services/api';
-import { initPusher, disconnectPusher } from '../services/pusherService';
+import { initSocket, disconnectSocket } from '../services/socketService';
 import KanbanBoard from '../features/kanban/KanbanBoard';
 import BoardSettingsPanel from '../features/kanban/BoardSettingsPanel';
 import InviteModal from '../features/kanban/InviteModal';
@@ -97,13 +97,14 @@ const BoardView = () => {
     useEffect(() => {
         fetchBoardData();
 
-        // Setup Pusher for real-time updates
-        initPusher(id, () => {
+        // Setup Socket.io for real-time updates
+        const socket = initSocket(id);
+        socket.on('board-updated', () => {
             fetchBoardData();
         });
 
         return () => {
-            disconnectPusher(id);
+            disconnectSocket(id);
         };
         // eslint-disable-next-line
     }, [id, dispatch]);

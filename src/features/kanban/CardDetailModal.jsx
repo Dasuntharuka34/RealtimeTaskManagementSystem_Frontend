@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { X, AlignLeft, Users, Calendar, Activity, CheckSquare, Plus, Flag, Tag, Palette } from 'lucide-react';
+import { X, AlignLeft, Users, Calendar, Activity, CheckSquare, Plus, Flag, Tag, Palette, Paperclip, File, Download } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateCardLocally } from '../../store/slices/kanbanSlice';
 import api from '../../services/api';
@@ -34,11 +34,13 @@ const CardDetailModal = ({ card, onClose, boardMembers }) => {
     const [newLabelText, setNewLabelText] = useState('');
     const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
     const [showCoverSelect, setShowCoverSelect] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
 
     // Convert assigned API objects to their IDs for easy checking
     const assignedIds = card.assignedTo?.map(u => u._id || u) || [];
 
     const descInputRef = useRef(null);
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         if (isEditingDesc && descInputRef.current) {
@@ -236,6 +238,51 @@ const CardDetailModal = ({ card, onClose, boardMembers }) => {
         }
     };
 
+    // --- Attachments Logic ---
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Ensure file is smaller than 5MB
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File must be smaller than 5MB');
+            return;
+        }
+
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const { data } = await api.post(`/cards/${card._id}/attachments`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            const cardToUpdate = { ...data, assignedTo: card.assignedTo };
+            dispatch(updateCardLocally(cardToUpdate));
+        } catch (error) {
+            console.error('Failed to upload attachment', error);
+            alert('Failed to upload file');
+        } finally {
+            setIsUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    const handleDeleteAttachment = async (attachmentId) => {
+        if (!window.confirm('Are you sure you want to delete this attachment?')) return;
+
+        try {
+            const { data } = await api.delete(`/cards/${card._id}/attachments/${attachmentId}`);
+            const cardToUpdate = { ...data, assignedTo: card.assignedTo };
+            dispatch(updateCardLocally(cardToUpdate));
+        } catch (error) {
+            console.error('Failed to delete attachment', error);
+            alert('Failed to delete attachment');
+        }
+    };
+
     const completedSubtasksCount = (card.subtasks || []).filter(st => st.isCompleted).length;
     const totalSubtasksCount = (card.subtasks || []).length;
     const subtasksProgress = totalSubtasksCount === 0 ? 0 : Math.round((completedSubtasksCount / totalSubtasksCount) * 100);
@@ -324,6 +371,66 @@ const CardDetailModal = ({ card, onClose, boardMembers }) => {
                                 )}
                             </div>
                         </div>
+
+                        {/* Attachments Section */}
+                        {((card.attachments && card.attachments.length > 0) || isUploading) && (
+                            <div className="flex items-start gap-4">
+                                <Paperclip className="text-slate-400 mt-1" size={24} />
+                                <div className="flex-1">
+                                    <h3 className="text-lg font-semibold text-slate-200 mb-3">Attachments</h3>
+                                    <div className="space-y-3">
+                                        {(card.attachments || []).map((attachment) => (
+                                            <div key={attachment._id} className="flex flex-col sm:flex-row sm:items-center gap-3 bg-slate-800/50 p-3 rounded-lg border border-slate-700/50 hover:bg-slate-800 transition-colors group">
+                                                <div className="w-12 h-12 bg-slate-900 rounded-md flex items-center justify-center shrink-0 border border-slate-700">
+                                                    {attachment.mimetype?.startsWith('image/') ? (
+                                                        <img src={attachment.url} alt="thumbnail" className="w-full h-full object-cover rounded-md" />
+                                                    ) : (
+                                                        <File className="text-slate-400" size={20} />
+                                                    )}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-medium text-slate-200 text-sm truncate">{attachment.filename}</p>
+                                                    <span className="text-xs text-slate-500">
+                                                        Added {new Date(attachment.uploadedAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-2 mt-2 sm:mt-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                                    <a
+                                                        href={attachment.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="p-2 text-slate-400 hover:text-blue-400 hover:bg-slate-900/50 rounded transition-colors"
+                                                        title="Download / View"
+                                                        download
+                                                    >
+                                                        <Download size={16} />
+                                                    </a>
+                                                    {canEdit && (
+                                                        <button
+                                                            onClick={() => handleDeleteAttachment(attachment._id)}
+                                                            className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-900/50 rounded transition-colors"
+                                                            title="Delete"
+                                                        >
+                                                            <X size={16} />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+
+                                        {isUploading && (
+                                            <div className="flex items-center gap-3 bg-slate-800/30 p-3 rounded-lg border border-slate-700/30 animate-pulse">
+                                                <div className="w-12 h-12 bg-slate-900 rounded-md"></div>
+                                                <div className="flex-1 space-y-2">
+                                                    <div className="h-4 bg-slate-700 rounded w-1/3"></div>
+                                                    <div className="h-3 bg-slate-800 rounded w-1/4"></div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Subtasks / Checklist Section */}
                         <div className="flex items-start gap-4">
@@ -648,6 +755,21 @@ const CardDetailModal = ({ card, onClose, boardMembers }) => {
                                         </div>
                                     </div>
                                 )}
+
+                                {/* Hidden file input for attachments */}
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleFileUpload}
+                                    className="hidden"
+                                />
+                                <button
+                                    className="w-full flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-md text-sm font-medium transition-colors border border-slate-700"
+                                    onClick={() => canEdit && fileInputRef.current?.click()}
+                                    disabled={!canEdit || isUploading}
+                                >
+                                    <Paperclip size={16} /> Attachment
+                                </button>
                             </div>
                         </div>
 

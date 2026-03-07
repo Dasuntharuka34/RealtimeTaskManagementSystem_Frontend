@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { setBoards } from '../store/slices/kanbanSlice';
 import { logout } from '../store/slices/authSlice';
 import api from '../services/api';
+import { initSocket, disconnectSocket } from '../services/socketService';
 import { LogOut, Plus, Layout, User } from 'lucide-react';
 
 const Dashboard = () => {
@@ -25,6 +26,13 @@ const Dashboard = () => {
             }
         };
         fetchBoards();
+
+        const socket = initSocket('dashboard');
+        socket.on('dashboard-updated', () => {
+            fetchBoards();
+        });
+
+        return () => disconnectSocket('dashboard');
     }, [dispatch]);
 
     const handleCreateBoard = async (e) => {

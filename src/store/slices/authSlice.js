@@ -46,8 +46,8 @@ export const uploadAvatar = createAsyncThunk('auth/uploadAvatar', async (formDat
     }
 });
 
-const userInfoFromStorage = localStorage.getItem('userInfo')
-    ? JSON.parse(localStorage.getItem('userInfo'))
+const userInfoFromStorage = sessionStorage.getItem('userInfo')
+    ? JSON.parse(sessionStorage.getItem('userInfo'))
     : null;
 
 const initialState = {
@@ -62,6 +62,10 @@ const authSlice = createSlice({
     reducers: {
         clearError: (state) => {
             state.error = null;
+        },
+        logoutLocal: (state) => {
+            state.userInfo = null;
+            sessionStorage.removeItem('userInfo');
         }
     },
     extraReducers: (builder) => {
@@ -73,7 +77,7 @@ const authSlice = createSlice({
             .addCase(login.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.userInfo = action.payload;
-                localStorage.setItem('userInfo', JSON.stringify(action.payload));
+                sessionStorage.setItem('userInfo', JSON.stringify(action.payload));
             })
             .addCase(login.rejected, (state, action) => {
                 state.isLoading = false;
@@ -89,7 +93,7 @@ const authSlice = createSlice({
                 // For verification-based registration, we just get a success message
                 if (action.payload._id) {
                     state.userInfo = action.payload;
-                    localStorage.setItem('userInfo', JSON.stringify(action.payload));
+                    sessionStorage.setItem('userInfo', JSON.stringify(action.payload));
                 }
             })
             .addCase(register.rejected, (state, action) => {
@@ -98,7 +102,7 @@ const authSlice = createSlice({
             })
             .addCase(logout.fulfilled, (state) => {
                 state.userInfo = null;
-                localStorage.removeItem('userInfo');
+                sessionStorage.removeItem('userInfo');
             })
             .addCase(updateProfile.pending, (state) => {
                 state.isLoading = true;
@@ -107,7 +111,7 @@ const authSlice = createSlice({
             .addCase(updateProfile.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.userInfo = action.payload;
-                localStorage.setItem('userInfo', JSON.stringify(action.payload));
+                sessionStorage.setItem('userInfo', JSON.stringify(action.payload));
             })
             .addCase(updateProfile.rejected, (state, action) => {
                 state.isLoading = false;
@@ -120,7 +124,7 @@ const authSlice = createSlice({
             .addCase(uploadAvatar.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.userInfo = action.payload;
-                localStorage.setItem('userInfo', JSON.stringify(action.payload));
+                sessionStorage.setItem('userInfo', JSON.stringify(action.payload));
             })
             .addCase(uploadAvatar.rejected, (state, action) => {
                 state.isLoading = false;
